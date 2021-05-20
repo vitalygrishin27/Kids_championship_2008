@@ -942,4 +942,23 @@ public class TeamCrud {
         out.flush();
         out.close();
     }
+    
+     @RequestMapping(value = "/ui/players/download/photo/{playerId}", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<InputStreamResource> download(HttpServletResponse response,@PathVariable Long playerId) throws DerffException {
+
+            Player player = playerService.findPlayerById(playerId);
+            if (player == null || player.getPhoto() == null) {
+               return null;
+            }
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(player.getPhoto());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition",
+                    "attachment; filename=" + player.getLastName() + ".jpg");
+            headers.setContentType(MediaType.IMAGE_JPEG);
+        response.setHeader("Access-Control-Allow-Origin", "*");
+         //   headers.add("Content-type", "application/octet-stream");
+            return ResponseEntity.ok().headers(headers).body(new InputStreamResource(byteArrayInputStream));
+
+    }
 }
