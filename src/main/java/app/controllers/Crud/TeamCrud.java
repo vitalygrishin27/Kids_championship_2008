@@ -14,7 +14,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.InputStreamResource;
+import app.exceptions.DerffException;
+import java.io.ByteArrayInputStream;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -947,5 +952,24 @@ public class TeamCrud {
         out.write(byteArray);
         out.flush();
         out.close();
+    }
+    
+     @RequestMapping(value = "/ui/players/download/photo/{playerId}", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<InputStreamResource> download(HttpServletResponse response,@PathVariable Long playerId) throws DerffException {
+
+            Player player = playerService.findPlayerById(playerId);
+            if (player == null || player.getPhoto() == null) {
+               return null;
+            }
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(player.getPhoto());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition",
+                    "attachment; filename=" + player.getLastName() + ".jpg");
+            headers.setContentType(MediaType.IMAGE_JPEG);
+        response.setHeader("Access-Control-Allow-Origin", "*");
+         //   headers.add("Content-type", "application/octet-stream");
+            return ResponseEntity.ok().headers(headers).body(new InputStreamResource(byteArrayInputStream));
+
     }
 }
